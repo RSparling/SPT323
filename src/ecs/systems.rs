@@ -4,6 +4,8 @@
 
 use crate::ecs::components::Position; //for position
 use crate::ecs::components::RenderData; //for RenderData
+use crate::ecs::components::Velocity; //for velocity
+use crate::ecs::components::PlayerData; //for player data
 use crate::ecs::entity_manager::{Entity, EntityManager}; //for EntityManager
 use crate::input_handler::InputHandler; // for InputHandler
 use crate::sdl_window_manager::SDLWindowManager; //for SDLWindowManager
@@ -17,13 +19,14 @@ pub struct MovementSystem; //struct for movement system
 
 impl MovementSystem {
     pub fn update(&mut self, entity_manager: &mut EntityManager, input_handler: &InputHandler) {
-        let entities_with_position: Vec<_> = entity_manager
-            .query_entities::<Position>() //query entities with position
+        let entities_with_velocity: Vec<_> = entity_manager
+            .query_entities::<Velocity>() //query entities with position
             .iter() //for each entity
             .map(|entity| entity.id) //map entity to id
             .collect(); //collect to vector
 
-        for entity_id in entities_with_position {
+        //for each entity with velocity check that it has a positoion and update the position based on the velocity
+        for entity_id in entities_with_velocity {
             //for each entity id
             if let Some(position) =
                 entity_manager.get_component_mut::<Position>(&Entity { id: entity_id })
@@ -77,5 +80,52 @@ impl<'a> System for RenderSystem<'a> {
         }
 
         self.window_manager.present(); //present window
+    }
+}
+
+pub struct PlayerController {}
+
+impl PlayerController  {//to be placed on player entity, sets the player's velocity based on input. If no input, sets velocity to 0.
+    pub fn update(&mut self, entity_manager: &mut EntityManager, input_handler: &InputHandler) {
+        //get entities with player data
+        let player_entities: Vec<_> = entity_manager
+            .query_entities::<PlayerData>()
+            .iter()
+            .map(|entity| entity.id)
+            .collect();
+
+            //if player_entities is empty then print "no player entities"
+        if player_entities.is_empty() {
+            println!("No player entities");
+        }
+        //for each player entity, set velocity based on input
+        //if no input, set velocity to 0
+        for entity_id in player_entities {
+            if let Some(velocity) = entity_manager.get_component_mut::<Velocity>(&Entity { id: entity_id }) {
+                velocity.x = 0.0;
+                velocity.y = 0.0;
+            }
+            else{
+                println!("No velocity component for player entity");
+            }
+            //check input
+            if let Some(velocity) = entity_manager.get_component_mut::<Velocity>(&Entity { id: entity_id }) {
+                if input_handler.is_w_pressed() {
+                    velocity.y -= 1.0;
+                }
+                if input_handler.is_s_pressed() {
+                    velocity.y += 1.0;
+                }
+                if input_handler.is_a_pressed() {
+                    velocity.x -= 1.0;
+                }
+                if input_handler.is_d_pressed() {
+                    velocity.x += 1.0;
+                }
+            }
+            else{
+                println!("No velocity component for player entity");
+            }
+        }
     }
 }

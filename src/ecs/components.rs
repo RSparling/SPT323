@@ -6,12 +6,21 @@
 
 pub trait Component {} //trait for component
 
-#[derive(Clone)]
+#[derive(Clone)] //derive clone means that the struct can be cloned and copied
 pub struct Position {
     //struct for position
     pub x: f32,
     pub y: f32,
 }
+
+#[derive(Clone)]
+pub struct Velocity {
+    //struct for velocity
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Component for Velocity {} //implementation of component for velocity
 
 impl Component for Position {} //implementation of component for position
 
@@ -25,3 +34,9 @@ pub struct RenderData {
 }
 
 impl Component for RenderData {} //implementation of component for render data
+
+pub struct PlayerData{
+    //empty for now
+}
+
+impl Component for PlayerData{} //implementation of component for player data
