@@ -11,7 +11,8 @@ use sdl_window_manager::SDLWindowManager;
 use sdl2::keyboard::Keycode;
 use sdl2::Sdl;
 use std::time::Duration;
-
+//other
+use rand::Rng;
 fn main() -> Result<(), String> {
     let sdl_context: Sdl = sdl2::init()?; //initialize sdl
     let video_subsystem = sdl_context.video()?; //initialize video subsystem
@@ -48,6 +49,34 @@ fn main() -> Result<(), String> {
     
     let mut player_controller = PlayerController {}; //create player controller
 
+    //create 10 entities with random positions and velocities
+    for _ in 0..10 {
+        let entity = entity_manager.create_entity(); //create entity
+        entity_manager.add_component(
+            &entity,
+            Position {
+                x: rand::random::<f32>() * 800.0,
+                y: rand::random::<f32>() * 600.0,
+            },
+        ); //add position component
+        entity_manager.add_component(
+            &entity,
+            RenderData {
+                r: rand::random::<f32>(),
+                g: rand::random::<f32>(),
+                b: rand::random::<f32>(),
+                size: 50.0,
+            },
+        ); //add render data component
+        entity_manager.add_component(
+            &entity,
+            ecs::components::Velocity {
+                x: rand::random::<f32>() * 10.0 - 5.0,
+                y: rand::random::<f32>() * 10.0 - 5.0,
+            },
+        ); //add velocity component
+    }
+
     let event_pump = sdl_context.event_pump()?; //create event pump
     let mut input_handler = InputHandler::new(event_pump); // create input handler
 
@@ -62,7 +91,7 @@ fn main() -> Result<(), String> {
         }
 
         player_controller.update(&mut entity_manager, &input_handler); //update player controller
-        movement_system.update(&mut entity_manager, &input_handler); //update movement system
+        movement_system.update(&mut entity_manager); //update movement system
         render_system.update(&mut entity_manager); //update render system
         
         // Sleep to limit frame rate

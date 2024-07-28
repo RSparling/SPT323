@@ -11,39 +11,33 @@ use crate::input_handler::InputHandler; // for InputHandler
 use crate::sdl_window_manager::SDLWindowManager; //for SDLWindowManager
 
 pub trait System {
-    //trait for system
-    fn update(&mut self, entity_manager: &mut EntityManager); //function to update
+    fn update(&mut self, entity_manager: &mut EntityManager); // function to update
 }
 
 pub struct MovementSystem; //struct for movement system
 
-impl MovementSystem {
-    pub fn update(&mut self, entity_manager: &mut EntityManager, input_handler: &InputHandler) {
-        let entities_with_velocity: Vec<_> = entity_manager
-            .query_entities::<Velocity>() //query entities with position
-            .iter() //for each entity
-            .map(|entity| entity.id) //map entity to id
-            .collect(); //collect to vector
+impl System for MovementSystem {
+    fn update(&mut self, entity_manager: &mut EntityManager) {
+        // Collect all entities with both Position and Velocity components
+        let entities_to_update: Vec<(u32, Velocity)> = entity_manager
+            .query_entities::<Velocity>() // query entities with Velocity
+            .iter()
+            .filter_map(|entity| {
+                let entity_id = entity.id;
+                if let Some(velocity) = entity_manager.get_component::<Velocity>(entity) {
+                    if entity_manager.get_component::<Position>(entity).is_some() {
+                        return Some((entity_id, velocity.clone()));
+                    }
+                }
+                None
+            })
+            .collect();
 
-        //for each entity with velocity check that it has a positoion and update the position based on the velocity
-        for entity_id in entities_with_velocity {
-            //for each entity id
-            if let Some(position) =
-                entity_manager.get_component_mut::<Position>(&Entity { id: entity_id })
-            {
-                //get mutable position
-                if input_handler.is_w_pressed() {
-                    position.y -= 1.0;
-                }
-                if input_handler.is_s_pressed() {
-                    position.y += 1.0;
-                }
-                if input_handler.is_a_pressed() {
-                    position.x -= 1.0;
-                }
-                if input_handler.is_d_pressed() {
-                    position.x += 1.0;
-                }
+        // Update positions based on velocities
+        for (entity_id, velocity) in entities_to_update {
+            if let Some(position) = entity_manager.get_component_mut::<Position>(&Entity { id: entity_id }) {
+                position.x += velocity.x;
+                position.y += velocity.y;
             }
         }
     }
