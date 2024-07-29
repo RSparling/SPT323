@@ -4,7 +4,7 @@ mod sdl_window_manager;
 //mod ecs;
 use ecs::components::{Position, RenderData};
 use ecs::entity_manager::EntityManager;
-use ecs::systems::{MovementSystem, RenderSystem, PlayerController, System};
+use ecs::systems::{CollisionSystem, MovementSystem, PlayerController, RenderSystem, System};
 use input_handler::InputHandler;
 use sdl_window_manager::SDLWindowManager;
 //use ecs::components::{Position, RenderData};
@@ -46,11 +46,11 @@ fn main() -> Result<(), String> {
     let mut render_system = RenderSystem {
         window_manager: &mut window_manager,
     }; //create render system
-    
+    let mut collision_system = CollisionSystem{}; //create collision system    
     let mut player_controller = PlayerController {}; //create player controller
 
     //create 10 entities with random positions and velocities
-    for _ in 0..10 {
+    for _ in 0..50 {
         let entity = entity_manager.create_entity(); //create entity
         entity_manager.add_component(
             &entity,
@@ -75,6 +75,8 @@ fn main() -> Result<(), String> {
                 y: rand::random::<f32>() * 10.0 - 5.0,
             },
         ); //add velocity component
+        //add collision data component to mark the entity as a collidable object
+        entity_manager.add_component(&entity, ecs::components::CollisionData {});
     }
 
     let event_pump = sdl_context.event_pump()?; //create event pump
@@ -92,6 +94,7 @@ fn main() -> Result<(), String> {
 
         player_controller.update(&mut entity_manager, &input_handler); //update player controller
         movement_system.update(&mut entity_manager); //update movement system
+        collision_system.update(&mut entity_manager); //update collision system
         render_system.update(&mut entity_manager); //update render system
         
         // Sleep to limit frame rate
