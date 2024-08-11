@@ -5,21 +5,22 @@
 use sdl2::event::Event; // for events
 use sdl2::keyboard::{Keycode, Scancode}; // for keycodes and scancodes
 
-pub struct InputHandler {
+pub struct InputHandler<'a> {
     // InputHandler struct
-    event_pump: sdl2::EventPump, // EventPump
+    event_pump: &'a mut sdl2::EventPump, // EventPump is now a mutable reference
 }
 
-impl InputHandler {
+
+impl<'a> InputHandler<'a> {
     // InputHandler implementation
-    pub fn new(event_pump: sdl2::EventPump) -> Self {
-        // Create a new InputHandler
-        InputHandler { event_pump } // Return the InputHandler
+    pub fn new(event_pump: &'a mut sdl2::EventPump) -> Self {
+        InputHandler { event_pump }
     }
 
     pub fn update(&mut self) {
         // Check for quit event
         for event in self.event_pump.poll_iter() {
+
             // Poll for events
             match event {
                 Event::Quit { .. } => std::process::exit(0), // Quit if the event is a quit event

@@ -1,7 +1,7 @@
 //ecs::system::RenderSystem.rs
 //Description:
 //This module contains the render system which is responsible for rendering entities to the screen.
-use crate::ecs::entity_manager::{EntityManager}; //use entity manager and entity
+use crate::ecs::entity_manager::EntityManager; //use entity manager and entity
 use crate::SDLWindowManager; //use window manager
 use crate::ecs::system::System; //use system trait
 

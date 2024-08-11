@@ -10,23 +10,18 @@ use input_handler::InputHandler;
 use sdl_window_manager::SDLWindowManager;
 //use ecs::components::{Position, RenderData};
 use sdl2::keyboard::Keycode;
-use sdl2::Sdl;
+
 use std::time::Duration;
 //other
 use rand::Rng;
 fn main() -> Result<(), String> {
-    let sdl_context: Sdl = sdl2::init()?; //initialize sdl
-    let video_subsystem = sdl_context.video()?; //initialize video subsystem
+    let mut window_manager = SDLWindowManager::new(); //create window manager
+    
+    // Move event_pump out of window_manager, if possible
+    let mut event_pump = window_manager.take_event_pump(); 
 
-    let window = video_subsystem
-        .window("SDL Window", 800, 600) //create window
-        .position_centered() //center window
-        .build() //build window
-        .map_err(|e| e.to_string())?; //error handling
-
-    let canvas = window.into_canvas().build().map_err(|e| e.to_string())?; //create canvas
-    let mut window_manager = SDLWindowManager::new(canvas); //create window manager
-
+    // Proceed with setting up systems
+    let mut input_handler = InputHandler::new(&mut event_pump);
     let mut entity_manager = EntityManager::new(); //create entity manager
 
     let entity = entity_manager.create_entity(); //create entity
@@ -49,7 +44,6 @@ fn main() -> Result<(), String> {
     }; //create render system
     let mut collision_system = CollisionSystem{}; //create collision system    
     let mut player_controller = PlayerController {}; //create player controller
-
     //create 10 entities with random positions and velocities
     for _ in 0..50 {
         let entity = entity_manager.create_entity(); //create entity
@@ -80,8 +74,6 @@ fn main() -> Result<(), String> {
         entity_manager.add_component(&entity, CollisionData {});
     }
 
-    let event_pump = sdl_context.event_pump()?; //create event pump
-    let mut input_handler = InputHandler::new(event_pump); // create input handler
 
     // Game loop
     'running: loop {
