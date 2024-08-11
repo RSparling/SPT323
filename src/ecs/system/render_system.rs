@@ -1,31 +1,27 @@
-//ecs::system::RenderSystem.rs
-//Description:
-//This module contains the render system which is responsible for rendering entities to the screen.
-use crate::ecs::entity_manager::EntityManager; //use entity manager and entity
-use crate::SDLWindowManager; //use window manager
-use crate::ecs::system::System; //use system trait
+use crate::ecs::entity_manager::EntityManager;
+use crate::SDLWindowManager;
+use crate::ecs::component::{position_data, render_data};
+use std::any::Any;
+use std::rc::Rc;
+use std::cell::RefCell;
 
-use crate::ecs::component::{position_data, render_data}; //use Position and RenderData components
+use super::System;
 
-pub struct RenderSystem<'a> {
-    //struct for render system
-    pub window_manager: &'a mut SDLWindowManager, //window manager
+pub struct RenderSystem {
+    pub window_manager: Rc<RefCell<SDLWindowManager>>,
 }
 
-impl<'a> System for RenderSystem<'a> {
-    //implementation of system for render system
-    fn update(&mut self, entity_manager: &mut EntityManager) {
-        //function to update
-        self.window_manager.clear(); //clear window
+impl System for RenderSystem {
+    fn update(&mut self, entity_manager: &mut EntityManager, _entity_id: u32) {
+        
+        let window_manager = self.window_manager.borrow_mut();
+
+        window_manager.clear();
 
         for entity in entity_manager.query_entities::<render_data::RenderData>() {
-            //for each entity with render data
             if let Some(render_data) = entity_manager.get_component::<render_data::RenderData>(entity) {
-                //get render data
                 if let Some(position) = entity_manager.get_component::<position_data::Position>(entity) {
-                    //get position
-                    self.window_manager.draw_square(
-                        //draw square
+                    window_manager.draw_square(
                         position.x as i32,
                         position.y as i32,
                         render_data.size as u32,
@@ -37,6 +33,18 @@ impl<'a> System for RenderSystem<'a> {
             }
         }
 
-        self.window_manager.present(); //present window
+        window_manager.present();
+    }
+
+    fn priority(&self) -> u32 {
+        100
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
