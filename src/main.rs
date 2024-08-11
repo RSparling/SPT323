@@ -1,10 +1,11 @@
 mod ecs;
 mod input_handler;
 mod sdl_window_manager;
+use ecs::component::position_data;
 //mod ecs;
-use ecs::components::{Position, RenderData};
+use ecs::component::{collision_data::CollisionData, player_data::PlayerData, position_data::Position, render_data::RenderData, velocity_data::Velocity};
 use ecs::entity_manager::EntityManager;
-use ecs::systems::{CollisionSystem, MovementSystem, PlayerController, RenderSystem, System};
+use ecs::system::{collision_system::CollisionSystem, movement_system::MovementSystem, player_controller::PlayerController, render_system::RenderSystem, System};
 use input_handler::InputHandler;
 use sdl_window_manager::SDLWindowManager;
 //use ecs::components::{Position, RenderData};
@@ -29,7 +30,7 @@ fn main() -> Result<(), String> {
     let mut entity_manager = EntityManager::new(); //create entity manager
 
     let entity = entity_manager.create_entity(); //create entity
-    entity_manager.add_component(&entity, Position { x: 50.0, y: 50.0 }); //add position component
+    entity_manager.add_component(&entity, position_data::Position { x: 50.0, y: 50.0 }); //add position component
     entity_manager.add_component(
         &entity,
         RenderData {
@@ -39,9 +40,9 @@ fn main() -> Result<(), String> {
             size: 10.0,
         },
     ); //add render data component
-    entity_manager.add_component(&entity, ecs::components::Velocity { x: 0.0, y: 0.0 }); //add velocity component
+    entity_manager.add_component(&entity, Velocity { x: 0.0, y: 0.0 }); //add velocity component
     //add player data component to mark the entity as a player
-    entity_manager.add_component(&entity, ecs::components::PlayerData {});
+    entity_manager.add_component(&entity, PlayerData {});
     let mut movement_system = MovementSystem; //create movement system
     let mut render_system = RenderSystem {
         window_manager: &mut window_manager,
@@ -70,13 +71,13 @@ fn main() -> Result<(), String> {
         ); //add render data component
         entity_manager.add_component(
             &entity,
-            ecs::components::Velocity {
+            Velocity {
                 x: rand::random::<f32>() * 10.0 - 5.0,
                 y: rand::random::<f32>() * 10.0 - 5.0,
             },
         ); //add velocity component
         //add collision data component to mark the entity as a collidable object
-        entity_manager.add_component(&entity, ecs::components::CollisionData {});
+        entity_manager.add_component(&entity, CollisionData {});
     }
 
     let event_pump = sdl_context.event_pump()?; //create event pump

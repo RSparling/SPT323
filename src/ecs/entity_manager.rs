@@ -1,6 +1,6 @@
 // src/ecs/entity_manager.rs
 
-use crate::ecs::components::Component;
+use crate::ecs::component::Component;
 use std::any::{Any, TypeId}; // for any and typeid
 use std::collections::HashMap; // for hashmap
 

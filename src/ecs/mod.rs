@@ -3,6 +3,6 @@
 //Description:
 //this module just re-exports the other modules in the ecs module.
 
-pub mod components;
+pub mod component;
 pub mod entity_manager;
-pub mod systems;
+pub mod system;
