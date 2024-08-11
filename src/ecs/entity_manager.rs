@@ -1,8 +1,10 @@
-// src/ecs/entity_manager.rs
-
 use crate::ecs::component::Component;
-use std::any::{Any, TypeId}; // for any and typeid
-use std::collections::HashMap; // for hashmap
+use crate::ecs::system::System;
+use crate::ecs::system::system_manager::SystemManager;
+use std::any::{Any, TypeId};
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Clone)]
 pub struct Entity {
@@ -12,7 +14,8 @@ pub struct Entity {
 pub struct EntityManager {
     next_id: u32,
     entities: Vec<Entity>,
-    components: HashMap<TypeId, HashMap<u32, Box<dyn Any>>>, // Box is a pointer to the heap, Any is a trait object
+    components: HashMap<TypeId, HashMap<u32, Box<dyn Any>>>,
+    system_manager: Rc<RefCell<SystemManager>>,
 }
 
 impl EntityManager {
@@ -21,6 +24,7 @@ impl EntityManager {
             next_id: 0,
             entities: Vec::new(),
             components: HashMap::new(),
+            system_manager: Rc::new(RefCell::new(SystemManager::new())),
         }
     }
 
@@ -62,5 +66,20 @@ impl EntityManager {
         } else {
             Vec::new()
         }
+    }
+
+    pub fn add_system(&mut self, system: Rc<RefCell<dyn System>>) {
+        self.system_manager.borrow_mut().add_system(system);
+    }
+
+    pub fn register_entity_to_system<T: System + 'static>(&mut self, entity: &Entity) {
+        self.system_manager.borrow_mut().register_entity_to_system::<T>(entity.id);
+    }
+
+    pub fn update(&mut self) {
+        let system_manager = Rc::clone(&self.system_manager);
+        
+        // Borrow the system manager mutably
+        system_manager.borrow_mut().update_systems(self);
     }
 }
