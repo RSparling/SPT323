@@ -1,6 +1,6 @@
 use crate::ecs::entity_manager::EntityManager;
-use crate::SDLWindowManager;
-use crate::ecs::component::{position_data, render_data};
+use crate::sdl_window_manager::SDLWindowManager;
+use crate::ecs::component::{transform_data::Transform, render_data::RenderData};
 use std::any::Any;
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -18,12 +18,12 @@ impl System for RenderSystem {
 
         window_manager.clear();
 
-        for entity in entity_manager.query_entities::<render_data::RenderData>() {
-            if let Some(render_data) = entity_manager.get_component::<render_data::RenderData>(entity) {
-                if let Some(position) = entity_manager.get_component::<position_data::Position>(entity) {
+        for entity in entity_manager.query_entities::<RenderData>() {
+            if let Some(render_data) = entity_manager.get_component::<RenderData>(entity) {
+                if let Some(transform) = entity_manager.get_component::<Transform>(entity) {
                     window_manager.draw_square(
-                        position.x as i32,
-                        position.y as i32,
+                        transform.position.pos_x as i32,
+                        transform.position.pos_y as i32,
                         render_data.size as u32,
                         (render_data.r * 255.0) as u8,
                         (render_data.g * 255.0) as u8,

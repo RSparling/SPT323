@@ -1,6 +1,7 @@
 use crate::ecs::component::Component;
 use crate::ecs::system::System;
 use crate::ecs::system::system_manager::SystemManager;
+use crate::game_manager::GameManager;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -16,16 +17,22 @@ pub struct EntityManager {
     entities: Vec<Entity>,
     components: HashMap<TypeId, HashMap<u32, Box<dyn Any>>>,
     system_manager: Rc<RefCell<SystemManager>>,
+    game_manager: Rc<RefCell<GameManager>>,
 }
 
 impl EntityManager {
-    pub fn new() -> Self {
+    pub fn new(game_manager: Rc<RefCell<GameManager>>) -> Self {
         EntityManager {
             next_id: 0,
             entities: Vec::new(),
             components: HashMap::new(),
             system_manager: Rc::new(RefCell::new(SystemManager::new())),
+            game_manager,
         }
+    }
+
+    pub fn get_game_manager(&self) -> Rc<RefCell<GameManager>> {
+        Rc::clone(&self.game_manager)
     }
 
     pub fn create_entity(&mut self) -> Entity {

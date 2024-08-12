@@ -11,6 +11,7 @@ pub mod collision_system;      // Module for collision system
 use std::any::Any;
 use crate::ecs::entity_manager::EntityManager;
 
+#[allow(dead_code)]
 pub trait SystemBase {
     fn update(&mut self, entity_manager: &mut EntityManager, entity_id: u32);
     fn priority(&self) -> u32;
