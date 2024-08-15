@@ -23,7 +23,7 @@ impl System for CollisionSystem {
         for entity in entity_manager.query_entities::<CollisionData>() {
             if let Some(transform) = entity_manager.get_component::<Transform>(entity) {
                 if let Some(render_data) = entity_manager.get_component::<RenderData>(entity) {
-                    collision_entities.push((entity.id, transform.position.pos_x, transform.position.pos_y, render_data.size));
+                    collision_entities.push((entity.id, transform.position.x(), transform.position.y(), render_data.size));
                 }
             }
         }

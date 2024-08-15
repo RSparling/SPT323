@@ -1,3 +1,4 @@
+/// src/ecs/entity_manager.rs
 use crate::ecs::component::Component;
 use crate::ecs::system::System;
 use crate::ecs::system::system_manager::SystemManager;

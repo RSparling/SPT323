@@ -16,7 +16,7 @@ fn main() -> Result<(), String> {
     // Create an SDL window manager
     let window_manager = SDLWindowManager::builder()
         .width(800)
-        .height(600)
+        .height(800)
         .title("Game Window")
         .build();
 

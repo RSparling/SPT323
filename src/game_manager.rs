@@ -1,10 +1,10 @@
+use crate::ecs::entity_manager::EntityManager;
+use crate::input_handler::InputHandler;
+use crate::level::level::Level;
+use crate::sdl_window_manager::SDLWindowManager;
+use sdl2::keyboard::Keycode;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::input_handler::InputHandler;
-use crate::sdl_window_manager::SDLWindowManager;
-use crate::ecs::entity_manager::EntityManager;
-use crate::level::level::Level;
-use sdl2::keyboard::Keycode;
 use std::time::Duration;
 
 pub struct GameManager {
@@ -34,7 +34,9 @@ impl GameManager {
     }
 
     pub fn get_entity_manager_mut(&mut self) -> &mut EntityManager {
-        self.entity_manager.as_mut().expect("EntityManager is not initialized")
+        self.entity_manager
+            .as_mut()
+            .expect("EntityManager is not initialized")
     }
 
     pub fn initialize_level(&mut self) {
@@ -47,6 +49,10 @@ impl GameManager {
 
     pub fn run_game_loop(&mut self) {
         'running: loop {
+            //clear window
+            {
+                self.window_manager.borrow_mut().clear();
+            }
             self.input_handler.borrow_mut().update();
 
             if self.input_handler.borrow().is_key_down(Keycode::Escape) {
@@ -55,6 +61,10 @@ impl GameManager {
 
             self.get_entity_manager_mut().update(); // Update all systems through the entity manager
 
+            //present the window
+            {
+                self.window_manager.borrow_mut().present();
+            }
             // Sleep to limit frame rate to 60 FPS
             std::thread::sleep(Duration::from_millis(8));
         }
