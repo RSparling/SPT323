@@ -86,9 +86,7 @@ impl Level {
         );
 
         entity_manager.register_entity_to_system::<MovementSystem>(&player_entity);
-        entity_manager.register_entity_to_system::<RenderSystem>(&player_entity);
         entity_manager.register_entity_to_system::<PlayerController>(&player_entity);
-        entity_manager.register_entity_to_system::<WorldSystem>(&world_entity);
         entity_manager.register_entity_to_system::<PlayerLook>(&player_entity);
     }
 }

@@ -12,8 +12,14 @@ pub struct MovementSystem;
 impl MovementSystem {
     /// Updates the position of a single entity based on its velocity
     fn update_entity_position(transform: &mut Transform) {
-        transform.position.set_x(transform.position.x() +transform.velocity.delta_x * (1.0 / 8.0));
-        transform.position.set_y(transform.position.y() + transform.velocity.delta_y * (1.0 / 8.0));
+        // Calculate the movement direction based on rotation
+        let rotation = transform.position.rotation();
+        let move_x = transform.velocity.delta_x * rotation.cos();
+        let move_y = transform.velocity.delta_x * rotation.sin();
+
+        // Update position based on movement direction
+        transform.position.set_x(transform.position.x() + move_x);
+        transform.position.set_y(transform.position.y() + move_y);
     }
 }
 

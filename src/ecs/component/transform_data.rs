@@ -10,9 +10,10 @@ pub struct Transform {
 pub struct Position {
     x: f32,
     y: f32,
-    rotation: f32, // rotation in degrees, should be between 0 and 360
+    rotation: f32, // rotation now in radians, should be between 0 and 2*PI
+    delta_x: f32,
+    delta_y: f32,
 }
-
 #[derive(Clone, Default)]
 pub struct Velocity {
     pub delta_x: f32,
@@ -27,16 +28,21 @@ impl Position {
             x,
             y,
             rotation,
+            delta_x: rotation.cos() * 10.0,
+            delta_y: rotation.sin() * 10.0,
         }
     }
-    /// Normalize the rotation to ensure it remains between 0 and 360 degrees
+
+    /// Normalize the rotation to ensure it remains between 0 and 2*PI radians
     pub fn normalize_rotation(&mut self) {
-        if self.rotation < 0.0{
-            self.rotation += 360.0;
+        self.rotation = self.rotation % (2.0 * std::f32::consts::PI);
+        //make sure the rotation is positive
+        if self.rotation < 0.0 {
+            self.rotation += 2.0 * std::f32::consts::PI;
         }
-        if self.rotation >= 360.0{
-            self.rotation -= 360.0;
-        }
+        //update the delta_x and delta_y
+        self.delta_x = self.rotation.cos() * 10.0;
+        self.delta_y = self.rotation.sin() * 10.0;
     }
 
     /// Update rotation by a given delta, normalizing afterwards
@@ -71,6 +77,17 @@ impl Position {
     pub fn set_coords(&mut self, x: f32, y: f32) {
         self.x = x;
         self.y = y;
+    }
+
+    pub fn rot_to_deg(&self) -> f32 {
+        let mut deg = self.rotation.to_degrees();
+        if deg < 0.0 {
+            deg += 360.0;
+        }
+        if deg >= 360.0 {
+            deg -= 360.0;
+        }
+        return deg;
     }
 }
 

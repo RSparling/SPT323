@@ -2,6 +2,9 @@
 // Description:
 // This module contains the player look system, responsible for casting rays to detect walls in the world.
 
+use sdl2::pixels::Color;
+use sdl2::sys::{ldiv_t, XOC};
+
 use crate::ecs::component::player_data::PlayerData;
 use crate::ecs::component::transform_data::Transform;
 use crate::ecs::component::world_data::WorldData;
@@ -9,136 +12,219 @@ use crate::ecs::entity_manager::EntityManager;
 use crate::sdl_window_manager::SDLWindowManager;
 use std::any::Any;
 use std::cell::RefCell;
+use std::f32::consts::PI;
 use std::f32::INFINITY;
 use std::rc::Rc;
 
 use super::System;
-
 pub struct PlayerLook {
     pub window_manager: Rc<RefCell<SDLWindowManager>>,
 }
 
 impl PlayerLook {
-    /// Casts a ray from the player's position and returns the hit position if a wall is detected.
-    fn cast_rays(
-        &mut self,
-        player: &Transform,
-        world_data: &WorldData,
-    ) {
-        let mut dist_horz: f32 = INFINITY;
-        let mut dist_vert: f32 = INFINITY;
-
-        let mut hit_horizontal: (f32, f32) = (0.0, 0.0);
-        let mut hit_vertical: (f32, f32) = (0.0, 0.0);
-        // Variables
-        let mut ray_angle: f32 = player.position.rotation();  // Now in degrees
-        let mut ray_x: f32;
-        let mut ray_y: f32;
-        let mut x_offset: f32;
-        let mut y_offset: f32;
-        let mut map_x: i32;
-        let mut map_y: i32;
-        let mut dof: i32 = 0; // Depth of field, the maximum distance the ray can travel measured in number of tiles
-        let max_dof: i32 = world_data.world_size as i32; // Max depth of field is set to the world size
-
-        // The loop for each ray
-        for _ in 0..1 {
-            // Horizontal
-            dof = 0;
-            let aTan: f32 = -1.0 / ray_angle.to_radians().tan(); // Convert angle to radians for trigonometric functions
-
-            if ray_angle > 180.0 { // Ray is pointing up
-                ray_y = (player.position.y() / world_data.cell_size as f32).floor() * world_data.cell_size as f32 - 0.0001;
-                ray_x = (player.position.y() - ray_y) * aTan + player.position.x();
-                y_offset = -(world_data.cell_size as f32);
-                x_offset = -y_offset * aTan;
-            } else if ray_angle < 180.0 { // Ray is pointing down
-                ray_y = (player.position.y() / world_data.cell_size as f32).floor() * world_data.cell_size as f32 + world_data.cell_size as f32;
-                ray_x = (player.position.y() - ray_y) * aTan + player.position.x();
-                y_offset = world_data.cell_size as f32;
-                x_offset = -y_offset * aTan;
-            } else { // Ray is pointing left or right
-                ray_x = player.position.x();
-                ray_y = player.position.y();
-                dof = world_data.world_size as i32;; // Set depth of field to max as the ray will never intersect
-                x_offset = world_data.cell_size as f32;
-                y_offset = 0.0;
-                println!("Warning: Ray never intersects with horizontal grid lines");
-            }
-            while dof <world_data.world_size as i32 {
-                map_x = (ray_x / world_data.cell_size as f32) as i32;
-                map_y = (ray_y / world_data.cell_size as f32) as i32;
-
-                if map_x < 0 || map_y < 0 || map_x >= world_data.world_size as i32 || map_y >= world_data.world_size as i32 {
-                    break; // Out of bounds
-                }
-
-                if world_data.is_wall(map_x, map_y) {
-                    dof = max_dof; // Stop when a wall is hit
-                    hit_horizontal = (ray_x, ray_y);
-                } else { // If it's not a wall, keep going
-                    ray_x += x_offset;
-                    ray_y += y_offset;
-                    dof += 1;
-                }
-            }
-            // vertical line check
-            dof = 0;
-            let n_tan: f32 = -ray_angle.to_radians().tan(); // Convert angle to radians for trigonometric functions
-            //looking left
-            if ray_angle > 90.0 && ray_angle < 270.0 {
-                ray_x = (player.position.x() / world_data.cell_size as f32).floor() * world_data.cell_size as f32 - 0.0001;
-                ray_y = (player.position.x() - ray_x) * n_tan + player.position.y();
-                x_offset = -(world_data.cell_size as f32);
-                y_offset = -x_offset * n_tan;
-            } else if ray_angle < 90.0 || ray_angle > 270.0 { //looking right
-                ray_x = (player.position.x() / world_data.cell_size as f32).floor() * world_data.cell_size as f32 + world_data.cell_size as f32;
-                ray_y = (player.position.x() - ray_x) * n_tan + player.position.y();
-                x_offset = world_data.cell_size as f32;
-                y_offset = -x_offset * n_tan;
-            } else { // Ray is pointing up or down
-                ray_x = player.position.x();
-                ray_y = player.position.y();
-                dof = world_data.world_size as i32; // Set depth of field to max as the ray will never intersect
-                x_offset = world_data.cell_size as f32;
-                y_offset = 0.0;
-                println!("Warning: Ray never intersects with horizontal grid lines");
-            }
-            while dof < world_data.world_size as i32 {
-                map_x = (ray_x / world_data.cell_size as f32) as i32;
-                map_y = (ray_y / world_data.cell_size as f32) as i32;
-
-                if map_x < 0 || map_y < 0 || map_x >= world_data.world_size as i32 || map_y >= world_data.world_size as i32 {
-                    break; // Out of bounds
-                }
-
-                if world_data.is_wall(map_x, map_y) {
-                    dof = max_dof; // Stop when a wall is hit
-                    hit_vertical = (ray_x, ray_y);
-                } else { // If it's not a wall, keep going
-                    ray_x += x_offset;
-                    ray_y += y_offset;
-                    dof += 1;
-                }
-            }
-            // Calculate the distance to the horizontal and vertical walls use the power of basic geometry
-            dist_horz = ((player.position.x() - hit_horizontal.0).powi(2) + (player.position.y() - hit_horizontal.1).powi(2)).sqrt();
-            dist_vert = ((player.position.x() - hit_vertical.0).powi(2) + (player.position.y() - hit_vertical.1).powi(2)).sqrt();
-
-            //draw the shortest ray
-            if dist_horz < dist_vert {
-                self.draw_ray((player.position.x(), player.position.y()), hit_horizontal);
+    /// Casts rays from the player's position and handles horizontal and vertical intersections.
+    fn cast_rays(&mut self, player: &Transform, world_data: &WorldData) {
+        let degree = (120.0 / 60.0) * 0.0174533; // Angle increment per ray
+        let mut ray_angle = player.position.rotation() - 60.0 * 0.0174533; // Start ray_angle 60 degrees left
+    
+        let window_width = {
+            let mut window_manager = self.window_manager.borrow_mut();
+            window_manager.get_window_size().0
+        };
+        
+        let ray_width = (window_width / 60) as i32; // Width of each ray slice
+        
+        for r in 0..60 {
+            let hit_vert: (f32, f32) = self.cast_vertical(player, world_data, ray_angle);
+            let hit_horz: (f32, f32) = self.cast_horizontal(player, world_data, ray_angle);
+    
+            let dist_horz = self.calculate_distance(
+                player.position.x(),
+                player.position.y(),
+                hit_horz.0,
+                hit_horz.1,
+            );
+            let dist_vert = self.calculate_distance(
+                player.position.x(),
+                player.position.y(),
+                hit_vert.0,
+                hit_vert.1,
+            );
+    
+            let dist = if dist_horz < dist_vert {
+                dist_horz
             } else {
-                self.draw_ray((player.position.x(), player.position.y()), hit_vertical);
+                dist_vert
+            };
+    
+            let mut color: Color = if dist_horz < dist_vert {
+                Color::RGB(255, 0, 0) // Color for horizontal walls
+            } else {
+                Color::RGB(0, 255, 0) // Color for vertical walls
+            };
+    
+            let line_height: i32 = ((world_data.cell_size as f32 / dist) * 100.0) as i32;
+            let max_line_height = world_data.cell_size as i32 * 10;
+            let line_height = if line_height > max_line_height {
+                max_line_height
+            } else {
+                line_height
+            };
+            let line_offset: i32;
+            {
+                let mut window_manager = self.window_manager.borrow_mut();
+                line_offset = (window_manager.get_window_size().1 as f32 / 2.0) as i32;
+            }
+            let top: i32 = line_offset - (line_height / 2);
+            let bottom: i32 = line_offset + (line_height / 2);
+    
+            let rect = (r * ray_width, top, ray_width, line_height);
+    
+            // Draw the wall slice as a filled rectangle
+            {
+                let mut window_manager = self.window_manager.borrow_mut();
+                window_manager.draw_rect(rect.0 as i32, rect.1 as i32, rect.2 as u32, rect.3 as u32, color.r, color.g, color.b);
+            }
+    
+            // Increment ray angle for next ray
+            ray_angle += degree;
+            if ray_angle < 0.0 {
+                ray_angle += 2.0 * PI;
+            }
+            if ray_angle > 2.0 * PI {
+                ray_angle -= 2.0 * PI;
             }
         }
     }
+    
+    
+    fn calculate_distance(&self, x1: f32, y1: f32, x2: f32, y2: f32) -> f32 {
+        return ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
+    }
+    fn cast_vertical(
+        &mut self,
+        player: &Transform,
+        world_data: &WorldData,
+        angle: f32,
+    ) -> (f32, f32) {
+        let mut ray_x: f32 = 0.0;
+        let mut ray_y: f32 = 0.0;
+        let mut dof: i32 = 0;
+        let mut map_x: i32 = 0;
+        let mut map_y: i32 = 0;
+        let mut xo: f32 = 0.0;
+        let mut yo: f32 = 0.0;
+        let mut hit: (f32, f32) = (0.0, 0.0);
+        let mut ray_angle = angle; //rotation in radians
+        let pc: (f32, f32) = (player.position.x(), player.position.y());
+        let tan = ray_angle.tan();
 
+        if ray_angle.cos() > 0.0001 {
+            //looking left
+            //round player position down to the nearest cell
+            //rx=(((int)px>>6)<<6)+64;      ry=(px-rx)*Tan+py; xo= 64; yo=-xo*Tan;
+            ray_x = (((pc.0 / world_data.cell_size as f32) as i32) * world_data.cell_size as i32)
+                as f32
+                + world_data.cell_size as f32;
+            ray_y = (pc.0 - ray_x) * tan + pc.1;
+            xo = world_data.cell_size as f32;
+            yo = -xo * tan;
+        } else if ray_angle.cos() < -(0.0001) {
+            //looking right
+            //round player position up to the nearest cell
+            //rx=(((int)px>>6)<<6) -0.0001; ry=(px-rx)*Tan+py; xo=-64; yo=-xo*Tan;
+            ray_x = (((pc.0 / world_data.cell_size as f32) as i32) * world_data.cell_size as i32)
+                as f32
+                - 0.0001;
+            ray_y = (pc.0 - ray_x) * tan + pc.1;
+            xo = -(world_data.cell_size as f32);
+            yo = -xo * tan;
+        } else {
+            dof = 20;
+            ray_x = pc.0;
+            ray_y = pc.1;
+        }
+
+        while dof < 20 {
+            //map_x from rounding ray x down to the nearest cell
+            map_x = ray_x as i32 / world_data.cell_size as i32;
+            //map_y rounding ray y down to the nearest cell
+            map_y = ray_y as i32 / world_data.cell_size as i32;
+            if world_data.is_wall(map_x, map_y) {
+                hit = (ray_x, ray_y);
+                break;
+            } else {
+                ray_x += xo;
+                ray_y += yo;
+                dof += 1;
+            }
+        }
+        return hit;
+    }
+
+    fn dr() -> f32 {
+        return 0.0174533;
+    }
+    fn cast_horizontal(
+        &mut self,
+        player: &Transform,
+        world_data: &WorldData,
+        angle: f32,
+    ) -> (f32, f32) {
+        let mut ray_x: f32 = 0.0;
+        let mut ray_y: f32 = 0.0;
+        let mut dof: i32 = 0;
+        let mut map_x: i32 = 0;
+        let mut map_y: i32 = 0;
+        let mut xo: f32 = 0.0;
+        let mut yo: f32 = 0.0;
+        let mut hit: (f32, f32) = (0.0, 0.0);
+        let mut ray_angle = angle; //rotation in radians
+        let pc: (f32, f32) = (player.position.x(), player.position.y());
+        let tan = ray_angle.tan();
+        let atan = 1.0 / tan;
+        if ray_angle.sin() > 0.001 {
+            //looking up
+            ray_y = (((pc.1 / world_data.cell_size as f32) as i32) * world_data.cell_size as i32)
+                as f32
+                - 0.0001;
+            ray_x = (pc.1 - ray_y) * atan + pc.0;
+            yo = -(world_data.cell_size as f32);
+            xo = -yo * atan;
+        } else if ray_angle.sin() < -(0.001) {
+            //looking down
+            ray_y = ((((pc.0 / world_data.cell_size as f32) as i32) * world_data.cell_size as i32)
+                + world_data.cell_size as i32) as f32;
+            ray_x = (pc.1 - ray_y) * atan + pc.0;
+            yo = world_data.cell_size as f32;
+            xo = -yo * atan;
+        } else {
+            dof = 20;
+            ray_x = pc.0;
+            ray_y = pc.1;
+        }
+
+        while dof < 20 {
+            map_x = ray_x as i32 / world_data.cell_size as i32;
+            map_y = ray_y as i32 / world_data.cell_size as i32;
+            if world_data.is_wall(map_x, map_y) {
+                hit = (ray_x, ray_y);
+                break;
+            } else {
+                ray_x += xo;
+                ray_y += yo;
+                dof += 1;
+            }
+        }
+        return hit;
+    }
+    
     /// Draws the ray from the player's position to the hit position or maximum length.
     fn draw_ray(
         &mut self,
         player_pos: (f32, f32),
         hit_pos: (f32, f32),
+        color: sdl2::pixels::Color,
     ) {
         let mut window_manager = self.window_manager.borrow_mut();
         window_manager.draw_line(
@@ -146,9 +232,9 @@ impl PlayerLook {
             player_pos.1 as i32,
             hit_pos.0 as i32,
             hit_pos.1 as i32,
-            255,
-            255,
-            255,
+            color.r,
+            color.g,
+            color.b,
         );
     }
 }
@@ -179,12 +265,12 @@ impl System for PlayerLook {
             .get_component::<WorldData>(&world_entities[0])
             .expect("Failed to get WorldData component");
 
-        // Cast a ray from the player's position
+        // Cast rays from the player's position
         self.cast_rays(transform, world_data);
     }
 
     fn priority(&self) -> u32 {
-        130
+        150
     }
 
     fn as_any(&self) -> &dyn Any {

@@ -21,7 +21,6 @@ impl WorldSystem {
         let sdl_window_manager = self.window_manager.borrow_mut();
 
         for wall in walls {
-            println!("Drawing wall at ({}, {})", wall.x, wall.y); // Debug print
 
             sdl_window_manager.draw_filled_rect(
                 (wall.x * cell_size) as i32,

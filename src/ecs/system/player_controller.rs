@@ -18,31 +18,35 @@ pub struct PlayerController {
 
 impl PlayerController {
     /// Performs the actual task of updating the player's transform based on input
-    fn update_player_transform(&self, transform: &mut Transform) {
+       /// Performs the actual task of updating the player's transform based on input
+       fn update_player_transform(&self, transform: &mut Transform) {
         transform.velocity.set_direct(0.0, 0.0); // Reset velocity
 
         let input_handler = self.input_handler.borrow();
+        let rotation = transform.position.rotation();
 
-        if input_handler.is_w_pressed() {
-            transform.velocity.delta_y -= 10.0;
+        let speed: f32 = 3.0;
+        if input_handler.is_w_pressed() { // Move forward
+            transform.velocity.delta_x += speed;
         }
-        if input_handler.is_s_pressed() {
-            transform.velocity.delta_y += 10.0;
+        if input_handler.is_s_pressed() { // Move backward
+            transform.velocity.delta_x -= speed;
         }
-        if input_handler.is_a_pressed() {
-            transform.velocity.delta_x -= 10.0;
+        if input_handler.is_a_pressed() { // Strafe left
+            transform.velocity.delta_y += speed;
         }
-        if input_handler.is_d_pressed() {
-            transform.velocity.delta_x += 10.0;
+        if input_handler.is_d_pressed() { // Strafe right
+            transform.velocity.delta_y -= speed;
         }
         if input_handler.is_q_pressed() { // Rotate counterclockwise
-            transform.position.update_rotation(-5.0);
+            transform.position.update_rotation(-0.01);
         }
         if input_handler.is_e_pressed() { // Rotate clockwise
-            transform.position.update_rotation(5.0);
+            transform.position.update_rotation(0.01);
         }
     }
 }
+
 
 impl System for PlayerController {
     fn update(&mut self, entity_manager: &mut EntityManager, _entity_id: u32) {

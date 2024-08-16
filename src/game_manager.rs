@@ -49,6 +49,11 @@ impl GameManager {
 
     pub fn run_game_loop(&mut self) {
         'running: loop {
+            std::process::Command::new("cmd")
+            .args(&["/C", "cls"])
+            .status()
+            .expect("Failed to clear terminal");
+    
             //clear window
             {
                 self.window_manager.borrow_mut().clear();
@@ -66,7 +71,7 @@ impl GameManager {
                 self.window_manager.borrow_mut().present();
             }
             // Sleep to limit frame rate to 60 FPS
-            std::thread::sleep(Duration::from_millis(8));
+            std::thread::sleep(Duration::from_millis(6));
         }
     }
 }
