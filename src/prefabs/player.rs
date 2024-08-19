@@ -8,6 +8,10 @@ use crate::ecs::component::transform_data::Position;
 use crate::ecs::component::{
     player_data::PlayerData, render_data::RenderData, transform_data, camera_data,
 };
+use crate::ecs::system::{
+    movement_system::MovementSystem, player_controller::PlayerController, camera_system::Camera_System,
+};
+
 pub struct Player;
 
 impl Player {
@@ -34,6 +38,10 @@ impl Player {
         );
         entity_manager.add_component(&player_entity, PlayerData::new());
         entity_manager.add_component(&player_entity, camera_data::CameraData::new());
+
+        entity_manager.register_entity_to_system::<MovementSystem>(&player_entity);
+        entity_manager.register_entity_to_system::<PlayerController>(&player_entity);
+        entity_manager.register_entity_to_system::<Camera_System>(&player_entity);
 
         return player_entity;
     }

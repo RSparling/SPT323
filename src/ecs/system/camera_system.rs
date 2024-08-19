@@ -15,11 +15,11 @@ use std::rc::Rc;
 
 use super::System;
 
-pub struct PlayerLook {
+pub struct Camera_System {
     pub window_manager: Rc<RefCell<SDLWindowManager>>,
 }
 
-impl PlayerLook {
+impl Camera_System {
     fn cast_rays(&mut self, player: &Transform, world_data: &WorldData, camera: &CameraData) {
         let map = &world_data.get_wall_array(); // Assuming world_data contains a 2D map array
         let _map_width = map[0].len() as i32;
@@ -172,7 +172,7 @@ impl PlayerLook {
         window_manager.draw_rect(x, y, 1, height as u32, color.0, color.1, color.2);
     }
 }
-impl System for PlayerLook {
+impl System for Camera_System {
     fn update(&mut self, entity_manager: &mut EntityManager, _entity_id: u32) {
         let player_entities = entity_manager.query_entities::<PlayerData>();
 

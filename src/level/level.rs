@@ -5,10 +5,10 @@ use crate::ecs::component::{
     transform_data, world_data::WorldData,
 };
 use crate::ecs::entity_manager::EntityManager;
-use crate::ecs::system::player_look;
+use crate::ecs::system::camera_system;
 use crate::ecs::system::{
     collision_system::CollisionSystem, movement_system::MovementSystem,
-    player_controller::PlayerController, render_system::RenderSystem, world_system::WorldSystem, player_look::PlayerLook
+    player_controller::PlayerController, render_system::RenderSystem, world_system::WorldSystem, camera_system::Camera_System
 };
 use crate::input_handler::InputHandler;
 use crate::sdl_window_manager::SDLWindowManager;
@@ -38,7 +38,7 @@ impl Level {
             let world_system = Rc::new(RefCell::new(WorldSystem {
                 window_manager: Rc::clone(&window_manager), // Pass the window manager correctly
             }));
-            let player_look = Rc::new(RefCell::new(player_look::PlayerLook {
+            let player_look = Rc::new(RefCell::new(camera_system::Camera_System {
                 window_manager: Rc::clone(&window_manager), // Pass the window manager correctly
             }));
 
@@ -51,28 +51,7 @@ impl Level {
             entity_manager.add_system(player_look.clone());
         }
         // Create a player entity
-        let player_entity = entity_manager.create_entity();
-        entity_manager.add_component(
-            &player_entity,
-            RenderData {
-                r: 0.99,
-                g: 0.99,
-                b: 0.5,
-                size: 10.0,
-            },
-        );
-        entity_manager.add_component(
-            &player_entity,
-            transform_data::Transform {
-                velocity: transform_data::Velocity {
-                    delta_x: 0.0,
-                    delta_y: 0.0,
-                },
-                position: Position::new(100.0, 100.0, 0.0),
-            },
-        );
-        entity_manager.add_component(&player_entity, PlayerData::new());
-        entity_manager.add_component(&player_entity, CameraData::new());
+        let player_entity = player::Player::spawn(entity_manager);
         let world_entity = entity_manager.create_entity();
         let window_size_x;
         let window_size_y;
@@ -86,9 +65,5 @@ impl Level {
             &world_entity,
             WorldData::new(20, window_size_x, window_size_y),
         );
-
-        entity_manager.register_entity_to_system::<MovementSystem>(&player_entity);
-        entity_manager.register_entity_to_system::<PlayerController>(&player_entity);
-        entity_manager.register_entity_to_system::<PlayerLook>(&player_entity);
     }
 }
