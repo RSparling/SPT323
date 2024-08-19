@@ -69,7 +69,7 @@ impl Level {
                 position: Position::new(100.0, 100.0, 0.0),
             },
         );
-        entity_manager.add_component(&player_entity, PlayerData {});
+        entity_manager.add_component(&player_entity, PlayerData::new());
 
         let world_entity = entity_manager.create_entity();
         let window_size_x;
@@ -88,5 +88,6 @@ impl Level {
         entity_manager.register_entity_to_system::<MovementSystem>(&player_entity);
         entity_manager.register_entity_to_system::<PlayerController>(&player_entity);
         entity_manager.register_entity_to_system::<PlayerLook>(&player_entity);
+        entity_manager.register_entity_to_system::<WorldSystem>(&world_entity);
     }
 }

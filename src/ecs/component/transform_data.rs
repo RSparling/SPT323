@@ -11,8 +11,8 @@ pub struct Position {
     x: f32,
     y: f32,
     rotation: f32, // rotation now in radians, should be between 0 and 2*PI
-    delta_x: f32,
-    delta_y: f32,
+    dir_x: f32,
+    dir_y: f32,
 }
 #[derive(Clone, Default)]
 pub struct Velocity {
@@ -28,8 +28,8 @@ impl Position {
             x,
             y,
             rotation,
-            delta_x: rotation.cos() * 10.0,
-            delta_y: rotation.sin() * 10.0,
+            dir_x: rotation.cos() * 10.0,
+            dir_y: rotation.sin() * 10.0,
         }
     }
 
@@ -41,10 +41,22 @@ impl Position {
             self.rotation += 2.0 * std::f32::consts::PI;
         }
         //update the delta_x and delta_y
-        self.delta_x = self.rotation.cos() * 10.0;
-        self.delta_y = self.rotation.sin() * 10.0;
+        self.dir_x = self.rotation.cos() * 10.0;
+        self.dir_y = self.rotation.sin() * 10.0;
     }
 
+    pub fn forward_vector(&self) -> (f32, f32) {
+        (self.dir_x, self.dir_y)
+    }
+
+    pub fn right_vector(&self) -> (f32, f32) {
+        (self.dir_y, -self.dir_x)
+    }
+
+    pub fn modify_position(&mut self, delta_x: f32, delta_y: f32) {
+        self.x += delta_x;
+        self.y += delta_y;
+    }
     /// Update rotation by a given delta, normalizing afterwards
     pub fn update_rotation(&mut self, delta: f32) {
         self.rotation += delta;
@@ -72,6 +84,14 @@ impl Position {
     pub fn set_rotation(&mut self, rotation: f32) {
         self.rotation = rotation;
         self.normalize_rotation();
+    }
+
+    pub fn dir_x(&self) -> f32 {
+        self.dir_x
+    }
+
+    pub fn dir_y(&self) -> f32 {
+        self.dir_y
     }
 
     pub fn set_coords(&mut self, x: f32, y: f32) {

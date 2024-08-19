@@ -64,7 +64,7 @@ impl System for WorldSystem {
 
         // Get all the walls to be rendered
         let walls = world_data.get_all_walls();
-        let cell_size = world_data.get_tile_size();
+        let cell_size = world_data.get_cell_size();
 
         // Delegate the wall drawing to a separate method
         self.draw_walls(&walls, cell_size);

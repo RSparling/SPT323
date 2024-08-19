@@ -45,6 +45,9 @@ impl WorldData {
         }
     }
 
+    pub fn get_wall_array(&self) -> &Vec<Vec<bool>> {
+        &self.walls
+    }
     // Returns a reference to walls
     pub fn is_wall(&self, x: i32, y: i32) -> bool {
         // Return true if x or y is out of bounds
@@ -56,7 +59,7 @@ impl WorldData {
     }
 
     // Returns the size of each tile
-    pub fn get_tile_size(&self) -> u32 {
+    pub fn get_cell_size(&self) -> u32 {
         self.cell_size
     }
 
@@ -71,5 +74,9 @@ impl WorldData {
             }
         }
         walls
+    }
+
+    pub fn get_map_coord_from_world_pos(&self, x: f32, y: f32) -> (i32, i32) {
+        ((x / self.cell_size as f32) as i32, (y / self.cell_size as f32) as i32)
     }
 }
