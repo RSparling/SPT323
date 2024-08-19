@@ -54,4 +54,12 @@ impl InputHandler {
     pub fn is_d_pressed(&self) -> bool {
         self.is_key_down(Keycode::D)
     }
+
+    pub fn is_q_pressed(&self) -> bool {
+        self.is_key_down(Keycode::Q)
+    }
+
+    pub fn is_e_pressed(&self) -> bool {
+        self.is_key_down(Keycode::E)
+    }
 }

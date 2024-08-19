@@ -2,7 +2,18 @@ use crate::ecs::component::Component;
 
 #[derive(Clone)]
 pub struct PlayerData{
-    //empty for now
+    fov: i32,
 }
 
-impl Component for PlayerData{} //implementation of component for player data
+impl Component for PlayerData{}
+
+impl PlayerData{
+    pub fn new() -> PlayerData{
+        PlayerData{
+            fov: 60,
+        }
+    }
+    pub fn get_fov(&self) -> i32{
+        self.fov
+    }
+}

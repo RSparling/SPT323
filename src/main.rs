@@ -3,7 +3,7 @@ mod input_handler;
 mod sdl_window_manager;
 mod level;
 mod game_manager;
-
+mod prefabs;
 use game_manager::GameManager;
 use input_handler::InputHandler;
 use sdl_window_manager::SDLWindowManager;
@@ -16,7 +16,7 @@ fn main() -> Result<(), String> {
     // Create an SDL window manager
     let window_manager = SDLWindowManager::builder()
         .width(800)
-        .height(600)
+        .height(800)
         .title("Game Window")
         .build();
 
