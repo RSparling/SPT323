@@ -1,6 +1,7 @@
 /// src/ecs/system/world_system.rs
 /// Description:
 /// This module contains the world system which is responsible for rendering the walls in the world.
+/// WARNING: This code is obselotete unless a top-down view is needed.
 use crate::ecs::component::world_data::{Wall, WorldData};
 use crate::ecs::entity_manager::EntityManager;
 use crate::sdl_window_manager::SDLWindowManager;

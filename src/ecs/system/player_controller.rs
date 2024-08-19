@@ -25,7 +25,7 @@ impl PlayerController {
         let input_handler = self.input_handler.borrow();
         let rotation = transform.position.rotation();
 
-        let speed: f32 = 3.0;
+        let speed: f32 = 0.1;
         if input_handler.is_w_pressed() { // Move forward
             transform.velocity.delta_x += speed;
         }
@@ -38,10 +38,10 @@ impl PlayerController {
         if input_handler.is_d_pressed() { // Strafe right
             transform.velocity.delta_y -= speed;
         }
-        if input_handler.is_q_pressed() { // Rotate counterclockwise
+        if input_handler.is_e_pressed() { // Rotate counterclockwise
             transform.position.update_rotation(-0.01);
         }
-        if input_handler.is_e_pressed() { // Rotate clockwise
+        if input_handler.is_q_pressed() { // Rotate clockwise
             transform.position.update_rotation(0.01);
         }
     }

@@ -9,4 +9,5 @@ pub mod collision_data;
 pub mod render_data;
 pub mod player_data;
 pub mod world_data;
+pub mod camera_data;
 pub trait Component {} //trait for component

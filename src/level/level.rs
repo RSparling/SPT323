@@ -1,3 +1,4 @@
+use crate::ecs::component::camera_data::CameraData;
 use crate::ecs::component::transform_data::Position;
 use crate::ecs::component::{
     collision_data::CollisionData, player_data::PlayerData, render_data::RenderData,
@@ -15,6 +16,7 @@ use crate::sdl_window_manager::SDLWindowManager;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::prefabs::player;
 pub struct Level;
 
 impl Level {
@@ -70,7 +72,7 @@ impl Level {
             },
         );
         entity_manager.add_component(&player_entity, PlayerData::new());
-
+        entity_manager.add_component(&player_entity, CameraData::new());
         let world_entity = entity_manager.create_entity();
         let window_size_x;
         let window_size_y;
@@ -88,6 +90,5 @@ impl Level {
         entity_manager.register_entity_to_system::<MovementSystem>(&player_entity);
         entity_manager.register_entity_to_system::<PlayerController>(&player_entity);
         entity_manager.register_entity_to_system::<PlayerLook>(&player_entity);
-        entity_manager.register_entity_to_system::<WorldSystem>(&world_entity);
     }
 }

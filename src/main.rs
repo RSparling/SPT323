@@ -3,7 +3,7 @@ mod input_handler;
 mod sdl_window_manager;
 mod level;
 mod game_manager;
-
+mod prefabs;
 use game_manager::GameManager;
 use input_handler::InputHandler;
 use sdl_window_manager::SDLWindowManager;
